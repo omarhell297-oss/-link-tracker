@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فاحص الروابط الذكي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4 font-sans">
+    <div class="w-full max-w-md bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-800">
+        <h1 class="text-2xl font-bold text-center mb-6 text-cyan-400">فاحص الروابط الذكي</h1>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm mb-2 text-slate-300">أدخل الرابط المراد توجيه الزوار إليه:</label>
+                <input type="url" id="targetUrl" placeholder="https://t.me/your_channel" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-cyan-400 text-white text-sm">
+            </div>
+            
+            <button onclick="generateLink()" class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-lg transition duration-200 text-sm">
+                إنشاء رابط التتبع الحقيقي
+            </button>
+        </div>
+
+        <div id="resultArea" class="hidden mt-6 p-4 bg-slate-950 rounded-lg border border-slate-800">
+            <p class="text-xs text-slate-400 mb-2">رابط التتبع الخاص بقناتك:</p>
+            <div class="flex items-center gap-2">
+                <input type="text" id="trackedLink" readonly class="w-full bg-slate-900 px-3 py-2 rounded text-xs text-cyan-300 border border-slate-800">
+                <button onclick="copyLink()" class="bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded text-xs font-semibold text-slate-200">نسخ</button>
+            </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-slate-800 grid grid-cols-2 gap-4 text-center">
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                <p class="text-slate-400 text-xs">الزيارات الحقيقية</p>
+                <p id="humanCount" class="text-2xl font-bold text-emerald-400 mt-1">0</p>
+            </div>
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                <p class="text-slate-400 text-xs">الروبوتات (Bots)</p>
+                <p id="botCount" class="text-2xl font-bold text-rose-400 mt-1">0</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const target = urlParams.get('to');
+
+            let humans = parseInt(localStorage.getItem('humans') || '0');
+            let bots = parseInt(localStorage.getItem('bots') || '0');
+
+            if (target) {
+                const userAgent = navigator.userAgent.toLowerCase();
+                const isBot = /bot|googlebot|crawler|spider|robot|headless|telegrambot|whatsapp/i.test(userAgent) || navigator.webdriver;
+
+                if (isBot) {
+                    bots++;
+                    localStorage.setItem('bots', bots);
+                } else {
+                    humans++;
+                    localStorage.setItem('humans', humans);
+                }
+
+                setTimeout(() => {
+                    window.location.href = decodeURIComponent(target);
+                }, 800);
+                return;
+            }
+
+            document.getElementById('humanCount').innerText = humans;
+            document.getElementById('botCount').innerText = bots;
+        };
+
+        function generateLink() {
+            const url = document.getElementById('targetUrl').value;
+            if (!url) {
+                alert('الرجاء إدخال الرابط أولاً!');
+                return;
+            }
+            const currentBase = window.location.origin + window.location.pathname;
+            const finalLink = `${currentBase}?to=${encodeURIComponent(url)}`;
+            
+            document.getElementById('trackedLink').value = finalLink;
+            document.getElementById('resultArea').classList.remove('hidden');
+        }
+
+        function copyLink() {
+            const copyText = document.getElementById('trackedLink');
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            alert('تم نسخ رابط التتبع بنجاح!');
+        }
+    </script>
+</body>
+</html>
